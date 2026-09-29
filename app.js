@@ -316,6 +316,7 @@
     const board = $("board");
     const currentFocus = state.lastFocusedIndex;
     board.style.gridTemplateColumns = `repeat(${state.board.size}, minmax(0, 1fr))`;
+    board.style.gridTemplateRows = `repeat(${state.board.size}, minmax(0, 1fr))`;
     board.setAttribute("aria-rowcount", state.board.size);
     board.setAttribute("aria-colcount", state.board.size);
     board.innerHTML = state.board.cells.map((cell, index) => {

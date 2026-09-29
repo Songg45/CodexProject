@@ -114,7 +114,7 @@ h2 { font-size: 1.22rem; }
 .route-line.invalid { stroke: var(--coral); filter: drop-shadow(0 0 5px rgba(255,139,128,0.8)); }
 @keyframes route-flow { to { stroke-dashoffset: -7.4; } }
 
-.tile { position: relative; display: grid; place-items: center; min-width: 0; min-height: 44px; padding: 0; border: 1px solid rgba(177,184,240,0.11); border-radius: clamp(7px, 1vw, 12px); color: var(--dim); background: linear-gradient(145deg, rgba(48,47,104,0.7), rgba(25,28,72,0.82)); cursor: crosshair; transition: border-color 130ms ease, background 130ms ease, transform 130ms ease, box-shadow 130ms ease; }
+.tile { position: relative; display: grid; place-items: center; min-width: 0; min-height: 0; padding: 0; border: 1px solid rgba(177,184,240,0.11); border-radius: clamp(7px, 1vw, 12px); color: var(--dim); background: linear-gradient(145deg, rgba(48,47,104,0.7), rgba(25,28,72,0.82)); cursor: crosshair; transition: border-color 130ms ease, background 130ms ease, transform 130ms ease, box-shadow 130ms ease; }
 .tile:hover { border-color: rgba(88,233,237,0.6); background: rgba(46,77,111,0.84); transform: translateY(-1px); }
 .tile:disabled { opacity: 1; }
 .tile .glyph { position: relative; z-index: 3; font-size: clamp(1.1rem, 3.5vw, 1.8rem); line-height: 1; }
