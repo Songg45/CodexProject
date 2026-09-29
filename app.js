@@ -174,7 +174,7 @@
     const center = Math.floor(size / 2) * size + Math.floor(size / 2);
     const candidateTrees = shuffled(safePath.filter((index) => cells[index].kind === "soil"), rng);
     const treePositions = [];
-    if (state.round === 8 && center !== sunIndex) treePositions.push(center);
+    if (state.round === 8 && !sunIndices.includes(center)) treePositions.push(center);
     for (const index of candidateTrees) {
       if (treePositions.length >= roundConfig.trees) break;
       if (!treePositions.includes(index)) treePositions.push(index);
@@ -251,6 +251,7 @@
     state.roundStartScore = state.score;
     state.attemptsLeft = 3;
     state.historicalRoutes = [];
+    state.roundBreakdown = { fruitPoints: 0, treeCount: 0, lengthBonus: 0, unusedBonus: 0, patternBonus: 0, gain: 0, multiplier: 1, routeCount: 0 };
     state.lastGain = 0;
     state.lastBreakdown = null;
     state.statusOverride = "";
@@ -488,6 +489,14 @@
     state.score += gain;
     state.lastGain = gain;
     state.lastBreakdown = { fruitPoints, treeCount, lengthBonus, unusedBonus, patternBonus, rawTotal, multiplier: multiplier(), gain, energyRemaining };
+    state.roundBreakdown.treeCount += treeCount;
+    state.roundBreakdown.fruitPoints += fruitPoints;
+    state.roundBreakdown.lengthBonus += lengthBonus;
+    state.roundBreakdown.unusedBonus += unusedBonus;
+    state.roundBreakdown.patternBonus += patternBonus;
+    state.roundBreakdown.gain += gain;
+    state.roundBreakdown.multiplier = Math.max(state.roundBreakdown.multiplier, multiplier());
+    state.roundBreakdown.routeCount += 1;
     state.historicalRoutes.push({ indexes, gain });
     state.statusOverride = "";
     state.route = [];
@@ -550,9 +559,9 @@
   }
 
   function showRoundClear() {
-    const b = state.lastBreakdown || { fruitPoints: 0, treeCount: 0, lengthBonus: 0, unusedBonus: 0, patternBonus: 0, gain: 0 };
+    const b = state.roundBreakdown || state.lastBreakdown || { fruitPoints: 0, treeCount: 0, lengthBonus: 0, unusedBonus: 0, patternBonus: 0, gain: 0, multiplier: 1, routeCount: 0 };
     const nextAction = state.round === 8 ? "View final harvest" : "Choose an upgrade";
-    showOverlay(`<div class="overlay-icon">✿</div><p class="eyebrow">HARVEST COMPLETE · ROUND ${String(state.round).padStart(2, "0")}</p><h2>Every bloom is glowing</h2><p class="overlay-subtitle">The circuit held. Your caretaker drone banked <strong>${state.score - state.roundStartScore}</strong> fruit-energy this orbit.</p><div class="breakdown"><div class="breakdown-row"><span>Fruit value × ${b.treeCount} trees</span><strong>+${b.fruitPoints}</strong></div><div class="breakdown-row"><span>Route length bonus</span><strong>+${b.lengthBonus}</strong></div><div class="breakdown-row"><span>Unused energy</span><strong>+${b.unusedBonus}</strong></div><div class="breakdown-row"><span>Pattern bonus</span><strong>+${b.patternBonus}</strong></div><div class="breakdown-row"><span>Combo multiplier</span><strong>×${(b.multiplier || 1).toFixed(1)}</strong></div><div class="breakdown-row total"><span>Orbit harvest</span><strong>+${b.gain || 0}</strong></div></div><div class="overlay-actions"><button class="primary-button" id="roundClearContinue" type="button">${nextAction} →</button></div>`);
+    showOverlay(`<div class="overlay-icon">✿</div><p class="eyebrow">HARVEST COMPLETE · ROUND ${String(state.round).padStart(2, "0")}</p><h2>Every bloom is glowing</h2><p class="overlay-subtitle">The circuit held. Your caretaker drone banked <strong>${state.score - state.roundStartScore}</strong> fruit-energy this orbit.</p><div class="breakdown"><div class="breakdown-row"><span>Fruit value × ${b.treeCount} trees</span><strong>+${b.fruitPoints}</strong></div><div class="breakdown-row"><span>Route length bonus</span><strong>+${b.lengthBonus}</strong></div><div class="breakdown-row"><span>Unused energy</span><strong>+${b.unusedBonus}</strong></div><div class="breakdown-row"><span>Pattern bonus</span><strong>+${b.patternBonus}</strong></div><div class="breakdown-row"><span>${b.routeCount > 1 ? "Peak combo multiplier" : "Combo multiplier"}</span><strong>×${(b.multiplier || 1).toFixed(1)}</strong></div><div class="breakdown-row total"><span>Orbit harvest</span><strong>+${b.gain || 0}</strong></div></div><div class="overlay-actions"><button class="primary-button" id="roundClearContinue" type="button">${nextAction} →</button></div>`);
     $("roundClearContinue").addEventListener("click", () => {
       if (state.round === 8) finishRun();
       else showUpgradeChoice();
