@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="theme-color" content="#100d2d">
+    <meta name="description" content="Neon Orchard — route sunlight through a drifting orbital orchard before the night storm arrives.">
+    <meta name="color-scheme" content="dark">
+    <title>Neon Orchard</title>
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="topbar">
+        <div class="brand-lockup">
+          <div class="brand-mark" aria-hidden="true">✦</div>
+          <div>
+            <p class="eyebrow">ORBITAL RESTORATION PROGRAM</p>
+            <h1>Neon Orchard</h1>
+          </div>
+        </div>
+        <div class="header-actions">
+          <button class="icon-button" id="pauseButton" type="button" aria-label="Pause game" title="Pause (P)">
+            <span aria-hidden="true">Ⅱ</span><span class="button-label">Pause</span>
+          </button>
+          <button class="icon-button" id="restartButton" type="button" aria-label="Restart current round" title="Restart current round (R)">
+            <span aria-hidden="true">↻</span><span class="button-label">Restart</span>
+          </button>
+          <button class="icon-button" id="settingsButton" type="button" aria-expanded="false" aria-controls="settingsPanel" aria-label="Open settings" title="Settings">
+            <span aria-hidden="true">⚙</span><span class="button-label">Settings</span>
+          </button>
+        </div>
+      </header>
+
+      <main>
+        <section class="status-strip" aria-label="Run status">
+          <div class="stat-card stat-round">
+            <span class="stat-label">ROUND</span>
+            <strong id="roundValue">01 <small>/ 08</small></strong>
+            <span id="roundTag" class="stat-note">Sprout orbit</span>
+          </div>
+          <div class="stat-card">
+            <span class="stat-label">SCORE</span>
+            <strong id="scoreValue">000000</strong>
+            <span id="scoreDelta" class="stat-note">Ready to route</span>
+          </div>
+          <div class="stat-card">
+            <span class="stat-label">COMBO</span>
+            <strong id="comboValue">×1.0</strong>
+            <span id="comboNote" class="stat-note">Build a chain</span>
+          </div>
+          <div class="stat-card stat-timer">
+            <div class="stat-row"><span class="stat-label">STORM TIMER</span><span id="timerValue" class="timer-value">48s</span></div>
+            <div class="meter" aria-hidden="true"><span id="timerMeter"></span></div>
+            <span id="timerNote" class="stat-note">Forecast stable</span>
+          </div>
+        </section>
+
+        <div class="play-layout">
+          <section class="game-card" aria-labelledby="boardHeading">
+            <div class="game-card-header">
+              <div>
+                <p class="eyebrow" id="boardHeading">CARETAKER CONSOLE</p>
+                <h2 id="roundTitle">Route the first bloom</h2>
+              </div>
+              <div class="seed-readout" title="Deterministic run seed">
+                <span class="seed-label">RUN SEED</span>
+                <code id="seedValue">----</code>
+              </div>
+            </div>
+
+            <div class="board-wrap" id="boardWrap">
+              <div class="board-halo" aria-hidden="true"></div>
+              <div class="route-status-row">
+                <p id="statusLine" class="route-status" role="status">Route: choose a sun node to begin.</p>
+                <span id="attemptsValue" class="attempts-badge">3 attempts</span>
+              </div>
+              <div class="board-stage">
+                <svg id="routeLayer" class="route-layer" aria-hidden="true" viewBox="0 0 100 100" preserveAspectRatio="none"></svg>
+                <div id="board" class="board" role="grid" aria-label="Orchard board"></div>
+                <div id="scorePopups" class="score-popups" aria-hidden="true"></div>
+              </div>
+              <div class="board-legend" aria-label="Board legend">
+                <span><i class="legend-glyph sun-glyph" aria-hidden="true">✦</i> Sun / relay start</span>
+                <span><i class="legend-glyph tree-glyph" aria-hidden="true">♣</i> Unlit tree</span>
+                <span><i class="legend-glyph storm-glyph" aria-hidden="true">✹</i> Storm block</span>
+                <span><i class="legend-glyph soil-glyph" aria-hidden="true">·</i> Soil costs 1</span>
+              </div>
+            </div>
+
+            <div class="controls-hint" aria-label="Controls">
+              <span class="hint-main"><kbd>Drag</kbd> from ✦ through trees, then release on a tree.</span>
+              <span><kbd>Arrows</kbd> move</span><span><kbd>Space</kbd> extend</span><span><kbd>Enter</kbd> commit</span><span><kbd>Esc</kbd> cancel</span>
+            </div>
+          </section>
+
+          <aside class="side-column">
+            <section class="info-card forecast-card" aria-labelledby="forecastTitle">
+              <div class="card-title-row">
+                <div>
+                  <p class="eyebrow">NIGHT STORM</p>
+                  <h2 id="forecastTitle">Forecast</h2>
+                </div>
+                <span id="stormIcon" class="storm-orb" aria-hidden="true">✹</span>
+              </div>
+              <p id="forecastText" class="forecast-text">The sky is clear. Build your first circuit.</p>
+              <div class="forecast-track" aria-hidden="true"><span id="forecastTrackFill"></span></div>
+              <div class="forecast-meta"><span id="hazardCount">0 hazards</span><span id="glassNote">Storm Glass offline</span></div>
+            </section>
+
+            <section class="info-card harvest-card" aria-labelledby="harvestTitle">
+              <div class="card-title-row">
+                <div>
+                  <p class="eyebrow">ORCHARD HEALTH</p>
+                  <h2 id="harvestTitle">Harvest</h2>
+                </div>
+                <span id="treeCount" class="tree-count">0 / 0</span>
+              </div>
+              <div class="harvest-progress" aria-hidden="true"><span id="harvestProgress"></span></div>
+              <p id="harvestText">Light every required tree to clear this orbit.</p>
+              <div class="upgrade-chips" id="upgradeChips" aria-label="Active upgrades"></div>
+            </section>
+
+            <section class="info-card quick-card" aria-labelledby="quickTitle">
+              <div class="card-title-row">
+                <div>
+                  <p class="eyebrow">FIELD NOTES</p>
+                  <h2 id="quickTitle">Caretaker log</h2>
+                </div>
+                <span class="log-dot" aria-hidden="true"></span>
+              </div>
+              <ul id="logList" class="log-list" aria-live="polite"></ul>
+            </section>
+          </aside>
+        </div>
+      </main>
+
+      <footer class="footer-bar">
+        <span>Local run · no account · deterministic seed</span>
+        <span><span class="connection-dot" aria-hidden="true"></span> Orchard systems nominal</span>
+      </footer>
+    </div>
+
+    <div id="settingsPanel" class="settings-panel" hidden>
+      <div class="settings-header"><div><p class="eyebrow">CONSOLE SETTINGS</p><h2>Make it yours</h2></div><button id="closeSettingsButton" class="close-button" type="button" aria-label="Close settings">×</button></div>
+      <label class="toggle-row"><span><strong>Master mute</strong><small>Silence all orchard audio.</small></span><input id="masterMuteToggle" type="checkbox"><i aria-hidden="true"></i></label>
+      <label class="toggle-row"><span><strong>High contrast</strong><small>Patterns and labels replace bloom.</small></span><input id="highContrastToggle" type="checkbox"><i aria-hidden="true"></i></label>
+      <label class="toggle-row"><span><strong>Reduced motion</strong><small>Disable pulsing and transition effects.</small></span><input id="reducedMotionToggle" type="checkbox"><i aria-hidden="true"></i></label>
+      <label class="toggle-row"><span><strong>Sound effects</strong><small>Soft synth cues for route events.</small></span><input id="effectsToggle" type="checkbox"><i aria-hidden="true"></i></label>
+      <label class="toggle-row"><span><strong>Music</strong><small>Ambient hum while the orchard grows.</small></span><input id="musicToggle" type="checkbox"><i aria-hidden="true"></i></label>
+      <p class="settings-footnote">Settings are saved on this device only.</p>
+    </div>
+
+    <div id="overlay" class="overlay" hidden>
+      <div id="overlayCard" class="overlay-card" role="dialog" aria-modal="true" aria-labelledby="overlayTitle"></div>
+    </div>
+
+    <div id="confirmModal" class="overlay" hidden>
+      <div class="confirm-card" role="dialog" aria-modal="true" aria-labelledby="confirmTitle">
+        <p class="eyebrow">CHECKPOINT</p>
+        <h2 id="confirmTitle">Restart this orbit?</h2>
+        <p>Your routes and score from this round will be rewound. The seed and upgrades stay the same.</p>
+        <div class="modal-actions"><button id="cancelConfirmButton" class="secondary-button" type="button">Keep growing</button><button id="acceptConfirmButton" class="primary-button" type="button">Restart round</button></div>
+      </div>
+    </div>
+
+    <div id="liveRegion" class="sr-only" aria-live="polite" aria-atomic="true"></div>
+    <script src="app.js"></script>
+  </body>
+</html>
