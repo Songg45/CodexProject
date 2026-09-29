@@ -341,7 +341,19 @@
     if (!state.board) return;
     const layer = $("routeLayer");
     const size = state.board.size;
-    const pointFor = (index) => { const { row, col } = rowCol(index, size); return `${((col + 0.5) / size) * 100},${((row + 0.5) / size) * 100}`; };
+    const layerRect = layer.getBoundingClientRect();
+    const board = $("board");
+    const pointFor = (index) => {
+      const tile = board.querySelector(`[data-index="${index}"]`);
+      if (!tile || !layerRect.width || !layerRect.height) {
+        const { row, col } = rowCol(index, size);
+        return `${((col + 0.5) / size) * 100},${((row + 0.5) / size) * 100}`;
+      }
+      const tileRect = tile.getBoundingClientRect();
+      const x = ((tileRect.left + tileRect.width / 2) - layerRect.left) / layerRect.width * 100;
+      const y = ((tileRect.top + tileRect.height / 2) - layerRect.top) / layerRect.height * 100;
+      return `${x},${y}`;
+    };
     const polyline = (indexes, className, width = 1.2) => {
       if (indexes.length < 2) return "";
       return `<polyline class="route-line ${className}" points="${indexes.map(pointFor).join(" ")}" stroke-width="${width}" />`;
@@ -868,6 +880,10 @@
   function closeSettings() { $("settingsPanel").hidden = true; $("settingsButton").setAttribute("aria-expanded", "false"); $("settingsButton").focus(); }
   function closeConfirm() { $("confirmModal").hidden = true; state.confirmAction = null; $("restartButton").focus(); }
 
+  function refreshRouteLayer() {
+    if (state.route.length || state.historicalRoutes.length) renderRouteLayer();
+  }
+
   function bindEvents() {
     $("board").addEventListener("pointerdown", handlePointerDown);
     $("board").addEventListener("pointermove", handlePointerMove);
@@ -886,7 +902,13 @@
     $("effectsToggle").addEventListener("change", (event) => { state.settings.effects = event.target.checked; ensureAudio(); saveSettings(); });
     $("highContrastToggle").addEventListener("change", (event) => { state.settings.highContrast = event.target.checked; saveSettings(); });
     $("reducedMotionToggle").addEventListener("change", (event) => { state.settings.reducedMotion = event.target.checked; saveSettings(); });
+    window.addEventListener("resize", refreshRouteLayer);
+    window.visualViewport?.addEventListener("resize", refreshRouteLayer);
     window.addEventListener("blur", () => { /* Focus changes never pause automatically. */ });
+    if (window.ResizeObserver) {
+      const boardStage = document.querySelector(".board-stage");
+      if (boardStage) new ResizeObserver(refreshRouteLayer).observe(boardStage);
+    }
   }
 
   bindEvents();
